@@ -1,7 +1,7 @@
 'use client'
 
 import { IMatch } from '@/globals/interfaces'
-import { Alert, Box, IconButton, Pagination, Stack } from '@mui/material'
+import { Alert, Box, Breadcrumbs, IconButton, Pagination, Stack } from '@mui/material'
 import React, { Suspense, useEffect, useState } from 'react'
 import { Error, ReportProblem, Search, Autorenew } from '@mui/icons-material'
 import style from './Team.module.css'
@@ -11,6 +11,7 @@ import { loadTeamCalendar } from '@/client_services/teams'
 import { VIEW_MATCHES_COUNT } from '@/globals/variables'
 import { FilterDate } from './Filter/FilterDate/FilterDate'
 import { FilterName } from './Filter/FilterName/FilterName'
+import Link from 'next/link'
 
 export const Team = () => {
 
@@ -19,6 +20,7 @@ export const Team = () => {
 	// Состояния для управления странцей
 	const [matches, setMatches] = useState<IMatch[]>([])
 	const [id, setId] = useState<number>(0)
+	const [bread, setBread] = useState<any>()
 
 	// Для реализации пагинации
 	const [view, setView] = useState<IMatch[]>([])
@@ -61,6 +63,12 @@ export const Team = () => {
 		const responce_compitition_calendar = await loadTeamCalendar(id, dateFrom, dateTo)
 		const data = await responce_compitition_calendar.json()
 		if (data.error) setMatchesError(data.error)
+		if (data.team) {
+			setBread({
+				name: data.team.name,
+				link: data.team.id
+			})
+		}
 		if (data.matches) {
 			let _matches: IMatch[] = []
 			if (name) _matches = data.matches.matches.filter((match: IMatch) => match.homeTeam.name.includes(name) || match.awayTeam.name.includes(name))
@@ -85,6 +93,10 @@ export const Team = () => {
 	}
 
 	return <Stack className={style.content} alignItems={"center"}>
+		<Breadcrumbs separator="-" sx={{ width: "100%" }}>
+			<Link href='/teams'>Команды</Link>
+			<Link href={`/team/?id=${bread?.link}`}>{bread?.name}</Link>
+		</Breadcrumbs>
 		<Stack className={style.filter} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
 			<FilterDate />
 			<FilterName />
