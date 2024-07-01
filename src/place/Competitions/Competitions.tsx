@@ -96,6 +96,7 @@ export const Competitions = () => {
 					<Stack className={style.competition} alignItems={"center"} justifyContent={"flex-end"}>
 						<img className={style.image} src={competition.emblem} />
 						<span className={style.title}>{competition.name}</span>
+						<span className={style.title}>{competition.area.name}</span>
 					</Stack>
 				</Link>)}
 			</>}
