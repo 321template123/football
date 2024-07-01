@@ -1,5 +1,5 @@
-import { Competition } from "@/place/Competition/Competition";
+import { AwaitCompetition, Competition } from "@/place/Competition/Competition";
 
 export default function Matches() {
-	return <Competition />
+	return <AwaitCompetition />
 }

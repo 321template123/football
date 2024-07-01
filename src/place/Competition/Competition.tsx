@@ -2,7 +2,7 @@
 
 import { IMatch } from '@/globals/interfaces'
 import { Alert, Box, IconButton, Pagination, Stack } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { Error, ReportProblem, Search, Autorenew } from '@mui/icons-material'
 import style from './Competition.module.css'
 import { useSearchParams } from 'next/navigation'
@@ -106,4 +106,13 @@ export const Competition = () => {
 		</Stack>
 		<Pagination page={page} onChange={(event: any, page: number) => setPage(page)} count={total} color="primary" />
 	</Stack>
+}
+
+export function AwaitCompetition() {
+	return (
+		// You could have a loading skeleton as the `fallback` too
+		<Suspense>
+			<Competition />
+		</Suspense>
+	)
 }
