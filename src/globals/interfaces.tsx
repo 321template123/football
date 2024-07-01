@@ -67,12 +67,14 @@ export interface IScore {
 	winner: IWinner
 	duration: string
 	fullTime: ITime
+	extraTime: ITime
+	penalties: ITime
 	halfTime: ITime
 }
 
 export interface ITime {
-	away: unknown
-	home: unknown
+	away: number
+	home: number
 }
 
 export interface ITeam {

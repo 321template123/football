@@ -8,7 +8,7 @@ import style from './Team.module.css'
 import { useSearchParams } from 'next/navigation'
 import { nullToUndefined } from '@/tools/nullToUndefined'
 import { loadTeamCalendar } from '@/client_services/teams'
-import { VIEW_MATCHES_COUNT } from '@/globals/variables'
+import { MATCH_STATUS, VIEW_MATCHES_COUNT } from '@/globals/variables'
 import { FilterDate } from './Filter/FilterDate/FilterDate'
 import { FilterName } from './Filter/FilterName/FilterName'
 import Link from 'next/link'
@@ -93,7 +93,7 @@ export const Team = () => {
 	}
 
 	return <Stack className={style.content} alignItems={"center"}>
-		<Breadcrumbs separator="-" sx={{ width: "100%" }}>
+		<Breadcrumbs separator="-" sx={{ width: "100%",marginBottom:'1rem' }}>
 			<Link href='/teams'>Команды</Link>
 			<Link href={`/team/?id=${bread?.link}`}>{bread?.name}</Link>
 		</Breadcrumbs>
@@ -107,21 +107,32 @@ export const Team = () => {
 			{matches_error && <Alert className={style.content} icon={<Error fontSize="inherit" />} severity="error">{matches_error}</Alert>}
 			{matches_warning && <Alert className={style.content} icon={<ReportProblem fontSize="inherit" />} severity="warning">{matches_warning}</Alert>}
 			{!matches_load && !matches_error && !matches_warning && <>
-				{view.map((match: IMatch) => <Stack className={style.match} sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} justifyContent={"space-around"}>
+				{view.map((match: IMatch,index:number) => <Stack key={index} className={style.match} sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} justifyContent={"space-around"} alignItems={"center"}>
 					<Stack alignItems={"center"}>
 						<span>{new Date(match.utcDate).toLocaleDateString()}</span>
 						<span>{new Date(match.utcDate).toLocaleTimeString()}</span>
+						<span className='text-center'>{MATCH_STATUS[match.status]}</span>
 					</Stack>
-					<Stack direction={"row"} justifyContent={"space-around"} sx={{ width: "100%" }}>
-						<Stack sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} alignItems={"center"} justifyContent={"space-around"}>
-							<img src={match.homeTeam.crest} width={50} />
-							<span>{match.homeTeam.name}</span>
+					<Stack direction={"row"} sx={{ width: "100%" }} alignItems={"center"} justifyContent={"center"}>
+					<Link href={`/team/?id=${match.homeTeam.id}`}>
+							<Stack sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} alignItems={"center"} justifyContent={"space-end"}>
+								<span style={{margin:'1rem'}}>{match.homeTeam.name}</span>
+								<img src={match.homeTeam.crest} width={50} />
+							</Stack>
+						</Link>
+						<Stack sx={{ width: "20%", flexDirection: { xs: "column", md: "row" } }} alignItems={"center"} justifyContent={"space-around"}>
+							<span>{match.score.fullTime.home} - {match.score.fullTime.away}</span>
+							{match.score.extraTime && <span>({match.score.extraTime.home} - {match.score.extraTime.away})</span>}
+							{match.score.penalties && <span>({match.score.penalties.home} - {match.score.penalties.away})</span>}
 						</Stack>
-						<Stack sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} alignItems={"center"} justifyContent={"space-around"}>
-							<img src={match.awayTeam.crest} width={50} />
-							<span>{match.awayTeam.name}</span>
-						</Stack>
+						<Link href={`/team/?id=${match.awayTeam.id}`}>
+							<Stack sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} alignItems={"center"} justifyContent={"space-start"}>
+								<img src={match.awayTeam.crest} width={50} />
+								<span style={{margin:'1rem'}}>{match.awayTeam.name}</span>
+							</Stack>
+						</Link>
 					</Stack>
+					<span><Link href={`/competition/?id=${match.competition.id}`}>В рамках лиги {match.competition.name}</Link></span>
 				</Stack>)}
 			</>}
 		</Stack>
