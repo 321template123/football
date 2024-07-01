@@ -4,15 +4,15 @@ import { IMatch } from '@/globals/interfaces'
 import { Alert, Box, IconButton, Pagination, Stack } from '@mui/material'
 import React, { Suspense, useEffect, useState } from 'react'
 import { Error, ReportProblem, Search, Autorenew } from '@mui/icons-material'
-import style from './Competition.module.css'
+import style from './Team.module.css'
 import { useSearchParams } from 'next/navigation'
 import { nullToUndefined } from '@/tools/nullToUndefined'
-import { loadCompetitionCalendar } from '@/client_services/leagues'
+import { loadTeamCalendar } from '@/client_services/teams'
 import { VIEW_MATCHES_COUNT } from '@/globals/variables'
 import { FilterDate } from './Filter/FilterDate/FilterDate'
 import { FilterName } from './Filter/FilterName/FilterName'
 
-export const Competition = () => {
+export const Team = () => {
 
 	const search = useSearchParams()
 
@@ -26,7 +26,7 @@ export const Competition = () => {
 	const [page, setPage] = useState<number>(1)
 
 	// Состояния загрузки данных
-	const [matches_load, setMatchesLoad] = useState<boolean>(false)
+	const [matches_load, setMatchesLoad] = useState<boolean>(true)
 	const [matches_error, setMatchesError] = useState<string | undefined>(undefined)
 	const [matches_warning, setMatchesWarning] = useState<string | undefined>(undefined)
 
@@ -39,7 +39,7 @@ export const Competition = () => {
 
 	useEffect(() => {
 		if (id === 0) return
-		fetchCompetition(id)
+		fetchTeam(id)
 	}, [id])
 
 	useEffect(() => {
@@ -54,11 +54,11 @@ export const Competition = () => {
 	}, [total])
 
 	// Функция загрузки лиг
-	const fetchCompetition = async (id: number, dateFrom?: string, dateTo?: string, name?: string) => {
+	const fetchTeam = async (id: number, dateFrom?: string, dateTo?: string, name?: string) => {
 		setMatchesWarning(undefined)
 		setMatchesError(undefined)
 		setMatchesLoad(true)
-		const responce_compitition_calendar = await loadCompetitionCalendar(id, dateFrom, dateTo)
+		const responce_compitition_calendar = await loadTeamCalendar(id, dateFrom, dateTo)
 		const data = await responce_compitition_calendar.json()
 		if (data.error) setMatchesError(data.error)
 		if (data.matches) {
@@ -81,7 +81,7 @@ export const Competition = () => {
 		const dateTo = (document.getElementsByClassName("filter-dateTo")[0].childNodes[1].childNodes[0] as HTMLInputElement).value
 		const name = (document.getElementById("filter-name") as HTMLInputElement).value
 
-		fetchCompetition(id, dateFrom, dateTo, name)
+		fetchTeam(id, dateFrom, dateTo, name)
 	}
 
 	return <Stack className={style.content} alignItems={"center"}>
@@ -95,7 +95,7 @@ export const Competition = () => {
 			{matches_error && <Alert className={style.content} icon={<Error fontSize="inherit" />} severity="error">{matches_error}</Alert>}
 			{matches_warning && <Alert className={style.content} icon={<ReportProblem fontSize="inherit" />} severity="warning">{matches_warning}</Alert>}
 			{!matches_load && !matches_error && !matches_warning && <>
-				{view.map((match: IMatch, index: number) => <Stack key={index} className={style.match} sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} justifyContent={"space-around"}>
+				{view.map((match: IMatch) => <Stack className={style.match} sx={{ width: "100%", flexDirection: { xs: "column", md: "row" } }} justifyContent={"space-around"}>
 					<Stack alignItems={"center"}>
 						<span>{new Date(match.utcDate).toLocaleDateString()}</span>
 						<span>{new Date(match.utcDate).toLocaleTimeString()}</span>
@@ -117,11 +117,11 @@ export const Competition = () => {
 	</Stack>
 }
 
-export function AwaitCompetition() {
+export function AwaitTeam() {
 	return (
 		// You could have a loading skeleton as the `fallback` too
 		<Suspense>
-			<Competition />
+			<Team />
 		</Suspense>
 	)
 }

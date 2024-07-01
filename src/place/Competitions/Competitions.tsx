@@ -11,110 +11,64 @@ import { FilterName } from './Filter/FilterName/FilterName'
 import { useSearchParams } from 'next/navigation'
 import { VIEW_COMPETITIONS_COUNT } from '@/globals/variables'
 import Link from 'next/link'
+import { error } from 'console'
 
 export const Competitions = () => {
 
-	// Состояния для управления странцей
 	const [areas, setAreas] = useState<IArea[]>([])
 	const [competitions, setCompetitions] = useState<ICompetition[]>([])
-
-	// Для реализации пагинации
 	const [view, setView] = useState<ICompetition[]>([])
 	const [total, setTotal] = useState<number>(0)
 	const [page, setPage] = useState<number>(1)
-
-	// Состояния загрузки данных
-	const [areas_load, setAreasLoad] = useState<boolean>(true)
+	const [areas_load, setAreasLoad] = useState<boolean>(false)
 	const [areas_error, setAreasError] = useState<string | undefined>(undefined)
 	const [areas_warning, setAreasWarning] = useState<string | undefined>(undefined)
-
-	const [competitions_load, setCompetitionsLoad] = useState<boolean>(true)
+	const [competitions_load, setCompetitionsLoad] = useState<boolean>(false)
 	const [competitions_error, setCompetitionsError] = useState<string | undefined>(undefined)
 	const [competitions_warning, setCompetitionsWarning] = useState<string | undefined>(undefined)
 
-	// Загрузка данных происходит при монтировании объекта
-	useEffect(() => {
-		fetchAreas()
-		fetchCompetitions()
-	}, [])
-
+	useEffect(() => { setPage(1) }, [total])
+	useEffect(() => { fetchAreas(); fetchCompetitions() }, [])
 	useEffect(() => {
 		if (competitions.length === 0) return
-		const start = (page - 1) * VIEW_COMPETITIONS_COUNT
-		const end = start + VIEW_COMPETITIONS_COUNT
+		const [start, end] = [(page - 1) * VIEW_COMPETITIONS_COUNT, (page - 1) * VIEW_COMPETITIONS_COUNT + VIEW_COMPETITIONS_COUNT]
 		setView(competitions.slice(start, end))
 	}, [competitions, page])
 
-	useEffect(() => {
-		setPage(1)
-	}, [total])
-
-	// Функция загрузки фильтра областей
 	const fetchAreas = async () => {
-
-		setAreasError(undefined)
-		setAreasWarning(undefined)
-
-		// Ожидаем данных
+		setAreasLoad(true)
 		const responce_areas = await loadAreas()
-		// Обрабатываем результат
 		const data = await responce_areas.json()
-
-		if (data.error) {
-			// При ошибке
-			setAreasError(data.error)
-		} else if (data.areas) {
-			// Если пришли данные
-			if (data.areas.length === 0) {
-				// Пустой массив
-				setAreasWarning("Список фильтров пустой")
-			} else {
-				// Наполненный массив
-				setAreas(data.areas)
-			}
-		} else {
-			// Непредведенная ошибка
-			setAreasError("Непредвиденная ошибка")
+		if (data.error) setAreasError(data.error)
+		if (data.areas) {
+			if (data.areas.length === 0) setAreasWarning("Фильтр пуст")
+			else setAreas(data.areas)
 		}
-		// Завершаем загрузку
 		setAreasLoad(false)
 	}
-
-	// Функция загрузки лиг
 	const fetchCompetitions = async (areas?: number, name?: string) => {
-		setCompetitionsError(undefined)
 		setCompetitionsWarning(undefined)
-		// Ожидаем данных
+		setCompetitionsError(undefined)
+		setCompetitionsLoad(true)
 		const responce_competitons = await loadCompetitions(areas)
-		// Обрабатываем результат
 		const data = await responce_competitons.json()
-		if (data.error) {
-			// При ошибке
-			setCompetitionsError(data.error)
-		} else if (data.competitions) {
-			// Если пришли данные
-			if (data.competitions.length === 0) {
-				// Пустой массив
-				setCompetitionsWarning("Список лиг пустой.")
+		if (data.error) setCompetitionsError(data.error)
+		if (data.competitions) {
+			let _competitions: ICompetition[] = []
+			if (name) _competitions = data.competitions.competitions.filter((competition: ICompetition) => competition.name.includes(name))
+			else _competitions = data.competitions.competitions
+			if (_competitions.length === 0) {
+				setCompetitionsWarning("Список лиг пуст. Необходимо выбрать другие параметры для фильров.")
+				setTotal(0)
 			} else {
-				// Наполненный массив
-				if (name) {
-					setCompetitions(data.competitions.competitions.filter((competition: ICompetition) => competition.name.includes(name)))
-				} else {
-					setCompetitions(data.competitions.competitions)
-				}
-				setTotal(Math.ceil(data.competitions.count / VIEW_COMPETITIONS_COUNT))
+				setCompetitions(_competitions)
+				setTotal(Math.ceil(_competitions.length / VIEW_COMPETITIONS_COUNT))
 			}
-		} else {
-			// Непредведенная ошибка
-			setCompetitionsError("Непредвиденная ошибка")
 		}
-		// Завершаем загрузку
 		setCompetitionsLoad(false)
 	}
 
 	const find = () => {
-		setCompetitionsLoad(true)
 		const [area,] = (document.getElementById("filter-area") as HTMLInputElement).value.split(' ')
 		const name = (document.getElementById("filter-name") as HTMLInputElement).value
 		if (area === "" && name !== "") {
@@ -123,29 +77,9 @@ export const Competitions = () => {
 		}
 		fetchCompetitions(+area, name)
 	}
-
 	if (areas_load) return <Alert className={style.content} icon={<Autorenew className='animation-spin' fontSize="inherit" />} severity="success">Загрузка ...</Alert>
 	if (areas_error) return <Alert className={style.content} icon={<Error fontSize="inherit" />} severity="error">{areas_error}</Alert>
 	if (areas_warning) return <Alert className={style.content} icon={<ReportProblem fontSize="inherit" />} severity="warning">{areas_warning}</Alert>
-
-	// КАЛЕНДАРЬ ЛИГИ ВОЗВРАЩАЮТСЯ
-	// const responce_competitons_calendar = await loadCompetitionCalendar(2016)
-	// const responce_competiton_calendar = await loadCompetitionCalendar(2016,"2022-12-01","2022-12-31")
-	// const competiton = await responce_competiton_calendar.json()
-	// console.log(competiton);
-
-	// КОМАНДЫ ВОЗВРАЩАЮТСЯ
-	// const responce_teams = await loadTeams()
-	// const teams = await responce_teams.json()
-	// console.log(teams);
-
-	// КАЛЕНДАРЬ ЛИГИ ВОЗВРАЩАЮТСЯ
-	// const responce_team_calendar = await loadTeamCalendar(57)
-	// const responce_team_calendar = await loadTeamCalendar(57,"2022-12-01","2022-12-31")
-	// const team = await responce_team_calendar.json()
-	// console.log(team);
-
-	// 2072 2301
 
 	return <Stack className={style.content} alignItems={"center"}>
 		<Stack className={style.filter} direction={"row"} alignItems={"center"}>
@@ -158,7 +92,7 @@ export const Competitions = () => {
 			{competitions_error && <Alert className={style.content} icon={<Error fontSize="inherit" />} severity="error">{competitions_error}</Alert>}
 			{competitions_warning && <Alert className={style.content} icon={<ReportProblem fontSize="inherit" />} severity="warning">{competitions_warning}</Alert>}
 			{!competitions_load && !competitions_error && !competitions_warning && <>
-				{view.map((competition: ICompetition) => <Link href={`/competition?id=${competition.id}`}>
+				{view.map((competition: ICompetition, index: number) => <Link key={index} href={`/competition?id=${competition.id}`}>
 					<Stack className={style.competition} alignItems={"center"} justifyContent={"flex-end"}>
 						<img className={style.image} src={competition.emblem} />
 						<span className={style.title}>{competition.name}</span>

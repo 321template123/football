@@ -1,0 +1,11 @@
+.content {
+	@apply p-5 m-5 mt-[100px] border rounded-md;
+}
+
+.filter {
+	@apply w-full;
+}
+
+.match {
+	@apply shadow p-2 m-2 rounded;
+}
