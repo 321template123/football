@@ -1,11 +1,11 @@
 const API_TOKEN = `${process.env.API_TOKEN}`
 
-export const loadData = async (url:string,error_message:string) => {
+export const loadData = async (url: string, error_message: string) => {
 	let response;
 	try {
 		console.log(url)
-		response = await fetch(url, {headers: {'X-Auth-Token': API_TOKEN}});
-	} catch (error:any) {
+		response = await fetch(url, { headers: { 'X-Auth-Token': API_TOKEN }, next: { revalidate: 3600 } });
+	} catch (error: any) {
 		throw new Error(`${error_message}. (${error.message})`);
 	}
 

@@ -1,0 +1,2 @@
+export const VIEW_COMPETITIONS_COUNT = 10
+export const VIEW_MATCHES_COUNT = 30

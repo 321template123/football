@@ -1,0 +1,23 @@
+.content {
+	@apply p-5 m-5 mt-[100px] border rounded-md;
+}
+
+.filter {
+	@apply w-full;
+}
+
+.list {
+	@apply grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 h-full w-full;
+}
+
+.competition {
+	@apply shadow p-2 m-2 rounded;
+
+	.image {
+		@apply mb-1 w-2/6;
+	}
+
+	.title {
+		@apply border-t w-full text-center;
+	}
+}
